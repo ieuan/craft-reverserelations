@@ -36,6 +36,11 @@ trait ReverseRelationsTrait
     public $readOnly;
 
     /**
+     * @var bool Allow relations to all sites content setting
+     */
+    public $allSites;
+
+    /**
      * @var array
      */
     protected $oldSources = [];
@@ -97,7 +102,9 @@ trait ReverseRelationsTrait
 
         // Get sources
         $sources = (clone $element->getFieldValue($this->handle))->anyStatus()->all();
-
+        if ($this->allSites) {
+            $sources = (clone $element->getFieldValue($this->handle))->siteId('*')->anyStatus()->all();
+        }
         // Find out which ones to add
         $add = array_diff($sources, $this->oldSources);
 
@@ -108,6 +115,9 @@ trait ReverseRelationsTrait
         /** @var ElementInterface $add */
         foreach ($add as $source) {
             $target = (clone $source->getFieldValue($field->handle))->anyStatus();
+            if ($this->allSites) {
+                $target = (clone $source->getFieldValue($field->handle))->siteId('*')->anyStatus();
+            }
 
             // Set this element on that element
             $this->saveRelations(
@@ -191,6 +201,7 @@ trait ReverseRelationsTrait
      */
     protected function saveRelations(BaseRelationField $field, Element $source, array $targetIds): void
     {
+        // dd($field, $targetIds);
         if ($field->localizeRelations) {
             $sourceSiteId = $source->siteId;
         } else {

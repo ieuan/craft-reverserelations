@@ -8,8 +8,11 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\db\ElementQueryInterface;
 use craft\fields\Entries;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
+use craft\services\ElementSources;
 
 /**
  * Reverse Relations Entries Field.
@@ -44,6 +47,10 @@ class ReverseEntries extends Entries
 
         /** @var Element|null $element */
         $query = parent::normalizeValue($value, $element);
+        
+        if($this->allSites) {
+            $query->siteId('*');
+        }
 
         // Overwrite inner join to switch sourceId and targetId
         if (!is_array($value) && $value !== '' && $element && $element->id) {
@@ -57,11 +64,13 @@ class ReverseEntries extends Entries
                     'relations.targetId' => $element->id,
                     'relations.fieldId' => $targetField->id,
                 ],
+                !$this->allSites ?
                 [
                     'or',
                     ['relations.sourceSiteId' => null],
                     ['relations.sourceSiteId' => $element->siteId],
-                ],
+                ]
+                : '',
             ]);
 
             $inputSourceIds = $this->inputSourceIds();
@@ -69,7 +78,6 @@ class ReverseEntries extends Entries
                 $query->where(['entries.sectionId' => $inputSourceIds]);
             }
         }
-
         return $query;
     }
 

@@ -16,3 +16,11 @@
     name: 'readOnly',
     on: settings.readOnly
 })}}
+
+{{ forms.lightswitchField({
+    label: "Select from all sites"|t("reverserelations"),
+    instructions: "Allow selection of relations from all sites."|t("reverserelations"),
+    id: 'allSites',
+    name: 'allSites',
+    on: settings.allSites
+})}}
